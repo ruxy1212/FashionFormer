@@ -130,3 +130,5 @@ mmdetection4
 mmdetection/mmdet
 mmdetection/demo0
 mmdetection/configs0
+mmdetection/docs
+mmdetection/docs_zh-CN
