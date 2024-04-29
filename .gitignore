@@ -124,3 +124,9 @@ debug/*
 vis/
 analysis/*
 pretrain/*
+
+mmdetection3
+mmdetection4
+mmdetection/mmdet
+mmdetection/demo0
+mmdetection/configs0

@@ -64,6 +64,24 @@ path/to/Fashionpedia/
 │   └── test2017/     # test images
 ```
 
+```projects.FashionFormer',    'models.necks.semantic_fpn_wrapper',    'datasets
+Project/
+├── configs/  # annotation json files
+│   ├── _base_/models/config.py
+│   └── #other items
+└── demo/
+|   └── main.py
+└── projects/
+│   ├── Fashionformer/
+|   |   ├── __init__.py
+│   |   └── #...and other files
+│   └── #...and other folders
+└── models/
+│   └── necks/
+|       └──semantic_fpn_wrapper.py
+│   └── #...and other folders
+```
+
 ### ModaNet
 
 Please see the details of this [link](https://github.com/eBay/modanet). 

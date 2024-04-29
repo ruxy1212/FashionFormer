@@ -7,7 +7,7 @@ num_proposals = 100
 conv_kernel_size = 1
 model = dict(
     backbone=dict(
-        norm_cfg=dict(type='SyncBN', requires_grad=True),
+        norm_cfg=dict(type='BN', requires_grad=True),
         norm_eval=False,
     ),
     rpn_head=dict(num_classes=46, ),

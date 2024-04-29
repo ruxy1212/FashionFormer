@@ -8,7 +8,7 @@ conv_kernel_size = 1
 model = dict(
     backbone=dict(
         depth=101,
-        norm_cfg=dict(type='SyncBN', requires_grad=True),
+        norm_cfg=dict(type='BN', requires_grad=True),
         norm_eval=False,
         init_cfg=dict(type='Pretrained', checkpoint='torchvision://resnet101')
     ),

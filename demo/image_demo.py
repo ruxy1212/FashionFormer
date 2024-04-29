@@ -1,3 +1,13 @@
+import os
+import sys
+
+# Add the paths to the projects and models directories to the Python path
+# project_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../mmdetection/projects'))
+# models_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../mmdetection/models'))
+# datasets_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../mmdetection/datasets'))
+# sys.path.insert(project_path)
+# sys.path.insert(models_path)
+# sys.path.insert(datasets_path)
 import asyncio
 from argparse import ArgumentParser
 
