@@ -55,6 +55,7 @@ class FashionFormer(TwoStageDetector):
         'check', 'dot', 'fair isle', 'floral', 'geometric', 'paisley', 'stripe', 'houndstooth', 'herringbone', 'chevron', 'argyle', 'leopard', 'snakeskin', 'cheetah', 'peacock', 
         'zebra', 'giraffe', 'toile de jouy', 'plant')
         self.super_categories = ("upperbody", "upperbody", "upperbody", "upperbody", "upperbody", "upperbody", "lowerbody", "lowerbody", "lowerbody", "wholebody", "wholebody", "wholebody", "wholebody", "head", "head", "head", "neck", "arms and hands", "arms and hands", "waist", "legs and feet", "legs and feet", "legs and feet", "legs and feet", "others", "others", "others", "garment parts", "garment parts", "garment parts", "garment parts", "garment parts", "garment parts", "garment parts", "closures", "closures", "decorations", "decorations", "decorations", "decorations", "decorations", "decorations", "decorations", "decorations", "decorations", "decorations")
+        self.main_categories = ("shirt, blouse", "top, t-shirt, sweatshirt", "sweater", "cardigan", "jacket", "vest", "trouser", "shorts", "skirt", "coat", "dress", "jumpsuit", "cape", "glasses", "hat", "headband, head covering, hair accessory", "tie", "glove", "watch", "belt", "leg warmer", "tights, stockings", "sock", "shoe", "bag, wallet", "scarf", "umbrella", "hood", "collar", "lapel", "epaulette", "sleeve", "pocket", "neckline", "buckle", "zipper", "applique", "bead", "bow", "flower", "fringe", "ribbon", "rivet", "ruffle", "sequin", "tassel")
 
     def forward_train(self,
                       img,
@@ -255,7 +256,7 @@ class FashionFormer(TwoStageDetector):
         if out_file is not None:
             show = False
         # draw bounding boxes
-        category_info, out_img = self.imshow_det_bboxes(img, cv_img, bboxes, labels, segms, attrs, class_names=self.CLASSES, score_thr=score_thr, bbox_color=bbox_color, text_color=text_color, mask_color=mask_color, thickness=thickness, font_size=font_size, win_name=win_name, show=show, wait_time=wait_time,out_file=out_file)
+        category_info, out_img = self.imshow_det_bboxes(img, cv_img, bboxes, labels, segms, attrs, class_names=self.main_categories, score_thr=score_thr, bbox_color=bbox_color, text_color=text_color, mask_color=mask_color, thickness=thickness, font_size=font_size, win_name=win_name, show=show, wait_time=wait_time,out_file=out_file)
 
         if not (show or out_file):
             return out_img, category_info
