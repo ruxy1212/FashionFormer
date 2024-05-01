@@ -19,7 +19,7 @@ from .fp_eval import FPEval, Fashionpedia
 @DATASETS.register_module()
 class FashionpediaDataset(CocoDataset):
     CLASSES = ('shirt, blouse', 'top, t-shirt, sweatshirt', 'sweater', 'cardigan', 'jacket',
-               'vest', 'pants', 'shorts', 'skirt', 'coat', 'dress', 'jumpsuit', 'cape', 'glasses', 'hat',
+               'vest', 'trouser', 'shorts', 'skirt', 'coat', 'dress', 'jumpsuit', 'cape', 'glasses', 'hat',
                'headband, head covering, hair accessory', 'tie', 'glove', 'watch', 'belt', 'leg warmer',
                'tights, stockings', 'sock', 'shoe', 'bag, wallet', 'scarf', 'umbrella', 'hood',
                'collar', 'lapel', 'epaulette', 'sleeve', 'pocket', 'neckline', 'buckle', 'zipper', 'applique', 'bead',
