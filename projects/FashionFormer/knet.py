@@ -8,6 +8,7 @@ from models.utils import sem2ins_masks
 from mmdet.models.builder import DETECTORS
 from mmdet.models.detectors.single_stage import SingleStageDetector
 import mmcv
+import cv2
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -53,7 +54,7 @@ class FashionFormer(TwoStageDetector):
         'slit', 'perforated', 'lining', 'applique', 'bead', 'rivet', 'sequin', 'no special manufacturing technique', 'plain', 'abstract', 'cartoon', 'letters, numbers', 'camouflage',
         'check', 'dot', 'fair isle', 'floral', 'geometric', 'paisley', 'stripe', 'houndstooth', 'herringbone', 'chevron', 'argyle', 'leopard', 'snakeskin', 'cheetah', 'peacock', 
         'zebra', 'giraffe', 'toile de jouy', 'plant')
-    
+        self.super_categories = ("upperbody", "upperbody", "upperbody", "upperbody", "upperbody", "upperbody", "lowerbody", "lowerbody", "lowerbody", "wholebody", "wholebody", "wholebody", "wholebody", "head", "head", "head", "neck", "arms and hands", "arms and hands", "waist", "legs and feet", "legs and feet", "legs and feet", "legs and feet", "others", "others", "others", "garment parts", "garment parts", "garment parts", "garment parts", "garment parts", "garment parts", "garment parts", "closures", "closures", "decorations", "decorations", "decorations", "decorations", "decorations", "decorations", "decorations", "decorations", "decorations", "decorations")
 
     def forward_train(self,
                       img,
@@ -220,13 +221,14 @@ class FashionFormer(TwoStageDetector):
                     bbox_color=(72, 101, 241),
                     text_color=(72, 101, 241),
                     mask_color=None,
-                    thickness=2,
-                    font_size=13,
+                    thickness=1,
+                    font_size=10,
                     win_name='',
-                    show=False,
+                    show=True,
                     wait_time=0,
                     out_file=None):
-        img = mmcv.imread(img)
+        cv_img = img # cv2.imread(img)
+        img = img # mmcv.imread(img)
         img = img.copy()
         if isinstance(result, tuple):
             bbox_result, segm_result, attr_result = result
@@ -253,33 +255,33 @@ class FashionFormer(TwoStageDetector):
         if out_file is not None:
             show = False
         # draw bounding boxes
-        img = self.imshow_det_bboxes(img, bboxes, labels, segms, attrs, class_names=self.CLASSES, 
-                            score_thr=score_thr, bbox_color=bbox_color, text_color=text_color,
-                            mask_color=mask_color, thickness=thickness, font_size=font_size, 
-                            win_name=win_name, show=show, wait_time=wait_time,out_file=out_file)
+        category_info, out_img = self.imshow_det_bboxes(img, cv_img, bboxes, labels, segms, attrs, class_names=self.CLASSES, score_thr=score_thr, bbox_color=bbox_color, text_color=text_color, mask_color=mask_color, thickness=thickness, font_size=font_size, win_name=win_name, show=show, wait_time=wait_time,out_file=out_file)
 
         if not (show or out_file):
-            return img
+            return out_img, category_info
+        else:
+            return out_img, category_info
 
     def color_val_matplotlib(self, color):
         color = mmcv.color_val(color)
         color = [color / 255 for color in color[::-1]]
         return tuple(color)
 
-    def imshow_det_bboxes(self, img, bboxes, labels, segms=None, attrs=None, class_names=None, score_thr=0,bbox_color='green', text_color='green',
+    def imshow_det_bboxes(self, img, cv_img, bboxes, labels, segms=None, attrs=None, class_names=None, score_thr=0,bbox_color='green', text_color='green',
                         mask_color=None, thickness=2, font_size=13, win_name='', show=True, wait_time=0, out_file=None):
        
         assert bboxes.ndim == 2, ' bboxes ndim should be 2, but its ndim is {bboxes.ndim}.'
         assert labels.ndim == 1, ' labels ndim should be 1, but its ndim is {labels.ndim}.'
         assert bboxes.shape[0] == labels.shape[0], 'bboxes.shape[0] and labels.shape[0] should have the same length.'
         assert bboxes.shape[1] == 4 or bboxes.shape[1] == 5, ' bboxes.shape[1] should be 4 or 5, but its {bboxes.shape[1]}.'
-        img = mmcv.imread(img).astype(np.uint8)
+        img = img.astype(np.uint8) # img = mmcv.imread(img).astype(np.uint8)
 
         if score_thr > 0:
             assert bboxes.shape[1] == 5
             scores = bboxes[:, -1]
             inds = scores > score_thr
             bboxes = bboxes[inds, :]
+            old_bboxes = bboxes
             attrs = attrs[inds, :]
             labels = labels[inds]
             if segms is not None:
@@ -302,7 +304,7 @@ class FashionFormer(TwoStageDetector):
         width, height = img.shape[1], img.shape[0]
         img = np.ascontiguousarray(img)
 
-        fig = plt.figure(win_name, frameon=False)
+        fig = plt.figure(win_name, frameon=True)
         plt.title(win_name)
         canvas = fig.canvas
         dpi = fig.get_dpi()
@@ -314,19 +316,68 @@ class FashionFormer(TwoStageDetector):
         plt.subplots_adjust(left=0, right=1, bottom=0, top=1)
         ax = plt.gca()
         ax.axis('off')
+
+        from sklearn.cluster import KMeans
+        from scipy.spatial import distance
+        import webcolors
+        from webcolors import rgb_to_name
+        import collections
+        from matplotlib.patches import Rectangle
+        category_info = []
+
+        def get_average_color(img, bbox):
+            if img is None:
+                return None
+            # x1, y1, x2, y2 = bbox
+            y1, x1, y2, x2 = bbox
+            roi = img[y1:y2, x1:x2]
+            if roi.size == 0:
+                return None
+            roi = cv2.cvtColor(roi, cv2.COLOR_BGR2RGB)
+            roi_flat = roi.reshape(-1, 3)
+            kmeans = KMeans(n_clusters=3, n_init=10)
+            kmeans.fit(roi_flat)
+            dominant_color = kmeans.cluster_centers_[np.argmax(np.bincount(kmeans.labels_))]
+            return dominant_color.astype(int)
+
+        def closest_color(request_color):
+            min_colors = {}
+            for key, name in webcolors.CSS3_HEX_TO_NAMES.items():
+                r_c, g_c, b_c = webcolors.hex_to_rgb(key)
+                rd = (r_c - request_color[0]) ** 2
+                gd = (g_c - request_color[1]) ** 2
+                bd = (b_c - request_color[2]) ** 2
+                min_colors[(rd + gd + bd)] = name
+            return min_colors[min(min_colors.keys())]
+
         from chainercv.utils import mask_to_bbox
         bboxes = mask_to_bbox(segms)
         polygons = []
         color = []
-        for i, (bbox, label) in enumerate(zip(bboxes, labels)):
+        
+        for i, (bbox, label, old_bbox) in enumerate(zip(bboxes, labels, old_bboxes)):
             bbox_int = bbox.astype(np.int32)
+            old_bbox_int = bbox.astype(np.int32)
+            poly = [[old_bbox_int[0], old_bbox_int[1]], [old_bbox_int[0], old_bbox_int[3]],
+                [old_bbox_int[2], old_bbox_int[3]], [old_bbox_int[2], old_bbox_int[1]]]
+            np_poly = np.array(poly).reshape((4, 2))
+            # polygons.append(Polygon(np_poly))
             color.append(bbox_color)
             label_text = ''
+            super_text = ''
+            attr_text = ''
+            label_text = class_names[label] if class_names is not None else f'class {label}'
+            label_text += f'|{old_bbox[-1]*100:.0f}%'
+            super_text = self.super_categories[label]
             for idx in attrs[i].nonzero()[0]:
-                label_text = label_text +  self.attr_classes[idx] + '\n'
-            # label_text = class_names[label] if class_names is not None else f'class {label}'
-            # if len(bbox) > 4:
-            #     label_text += f'|{bbox[-1]:.02f}'
+                attr_text = attr_text +  self.attr_classes[idx] + '\n'
+            # Get average color
+            average_color = get_average_color(cv_img, bbox_int)
+            if average_color is None:
+                closest_html_color = ''
+            else:
+                closest_html_color = closest_color(average_color)
+            category_info.append([label_text, super_text, attr_text, closest_html_color])
             ax.text(
                 bbox_int[1],
                 bbox_int[0],
@@ -343,13 +394,16 @@ class FashionFormer(TwoStageDetector):
                 horizontalalignment='left')
             if segms is not None:
                 color_mask = mask_colors[labels[i]]
+                normalized_mask = color_mask / 255.0
                 mask = segms[i].astype(bool)
                 img[mask] = img[mask] * 0.5 + color_mask * 0.5
+                rect = Rectangle((bbox_int[1], bbox_int[0]), bbox_int[3] - bbox_int[1], bbox_int[2] - bbox_int[0], fill=False, edgecolor=normalized_mask, linewidth=2)
+                ax.add_patch(rect)
 
         plt.imshow(img)
-
+        # print(polygons)
         p = PatchCollection(
-            polygons, facecolor='none', edgecolors=color, linewidths=thickness)
+            polygons, facecolor='none', edgecolors=color, linewidths=1)
         ax.add_collection(p)
 
         stream, _ = canvas.print_to_buffer()
@@ -374,4 +428,4 @@ class FashionFormer(TwoStageDetector):
 
         plt.close()
 
-        return img
+        return category_info, img
