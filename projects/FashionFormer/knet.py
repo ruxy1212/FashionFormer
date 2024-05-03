@@ -55,6 +55,7 @@ class FashionFormer(TwoStageDetector):
         'check', 'dot', 'fair isle', 'floral', 'geometric', 'paisley', 'stripe', 'houndstooth', 'herringbone', 'chevron', 'argyle', 'leopard', 'snakeskin', 'cheetah', 'peacock', 
         'zebra', 'giraffe', 'toile de jouy', 'plant')
         self.super_categories = ("upperbody", "upperbody", "upperbody", "upperbody", "upperbody", "upperbody", "lowerbody", "lowerbody", "lowerbody", "wholebody", "wholebody", "wholebody", "wholebody", "head", "head", "head", "neck", "arms and hands", "arms and hands", "waist", "legs and feet", "legs and feet", "legs and feet", "legs and feet", "others", "others", "others", "garment parts", "garment parts", "garment parts", "garment parts", "garment parts", "garment parts", "garment parts", "closures", "closures", "decorations", "decorations", "decorations", "decorations", "decorations", "decorations", "decorations", "decorations", "decorations", "decorations")
+        self.main_categories = ("shirt, blouse", "top, t-shirt, sweatshirt", "sweater", "cardigan", "jacket", "vest", "trouser", "shorts", "skirt", "coat", "dress", "jumpsuit", "cape", "glasses", "hat", "headband, head covering, hair accessory", "tie", "glove", "watch", "belt", "leg warmer", "tights, stockings", "sock", "shoe", "bag, wallet", "scarf", "umbrella", "hood", "collar", "lapel", "epaulette", "sleeve", "pocket", "neckline", "buckle", "zipper", "applique", "bead", "bow", "flower", "fringe", "ribbon", "rivet", "ruffle", "sequin", "tassel")
 
     def forward_train(self,
                       img,

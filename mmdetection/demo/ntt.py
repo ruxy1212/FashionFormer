@@ -35,7 +35,7 @@ def main(args):
     # test a single image
     result = inference_detector(model, args.img)
     # show the results
-    ress = model._show_result(
+    ress = model._show_result_cv(
         args.img,
         result,
         score_thr=args.score_thr,
